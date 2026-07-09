@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Standalone Army memorandum library with Typst rendering"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { text = "AGPL" }
 authors = [
     { name = "Joe Schlessinger", email = "jschless@example.com" },
 ]
@@ -17,7 +17,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Government",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: AGPL",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
