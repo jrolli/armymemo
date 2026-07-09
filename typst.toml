@@ -1,0 +1,9 @@
+[package]
+name = "armymemo"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["jschless", "jrolli"]
+license = "AGPL"
+description = "AR 25-50 Army memorandum template for Typst."
+keywords = ["army", "memorandum", "memo", "ar-25-50", "correspondence"]
+categories = ["report"]
