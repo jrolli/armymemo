@@ -54,7 +54,40 @@
     distribution-gap: 12pt,
     cf-gap: 22pt,
   ),
+  // Boxes emitted as <esign-field> metadata for PDF signature form fields.
+  // The concur box sits to the right of its THRU line, extending into the
+  // right margin with its right edge on the page edge (72pt + 6.25in + 1.25in
+  // = 612pt, the US Letter width).
+  esign: (
+    signature-width: 2in,
+    concur-width: 0.75in,
+    concur-height: 0.25in,
+    concur-dx: 6.25in,
+    concur-dy: 0in,
+  ),
 )
+
+// Emit one esign field descriptor for downstream PDF form-field tooling.
+// Call it INLINE, immediately before the text it anchors to (no space between
+// the call and the text). (x, y) of the emitted box = current layout position
+// shifted by (dx, dy); the anchor's own position is the visual top-left of the
+// current line's text (typst's cap-height top edge) — except inside a real
+// paragraph (`par` or a markup paragraph in a flow), where inline tags sit one
+// cap height lower, on the line's baseline; compensate dy by the current
+// font's measured cap height there (see _concur-field). Coordinates are in pt
+// from the page's top-left corner, y increasing downward. Extract with:
+//   typst eval 'query(<esign-field>).map(it => it.value)' --in memo.typ --format json
+#let esign-field(name, w, h, dx: 0pt, dy: 0pt) = context {
+  let pos = here().position()
+  [#metadata((
+    name: name,
+    page: pos.page,
+    x: (pos.x + dx).pt(),
+    y: (pos.y + dy).pt(),
+    w: w.pt(),
+    h: h.pt(),
+  )) <esign-field>]
+}
 
 // AR 25-50 paragraph numbering label: 1. / a. / (1) / (a), keyed on nesting depth.
 #let _para-depth = state("armymemo-para-depth", 0)
@@ -150,7 +183,21 @@
   v(gap)
 }
 
-// MEMORANDUM FOR / THRU / FOR RECORD routing block.
+// Concurrence box anchored to the start of THRU addressee line `n`, pushed
+// to the right of the line text (partly into the right margin) and vertically
+// centered on it. Inside a real
+// paragraph (which route lines are, for their hanging indent) an inline tag's
+// position is the line's baseline, one cap height below the visual top-left
+// that esign boxes are specified against — so shift dy up by the current
+// font's measured cap height.
+#let _concur-field(n) = context {
+  let es = layout.esign
+  let cap-height = measure(text[X]).height
+  esign-field("Concur" + str(n), es.concur-width, es.concur-height, dx: es.concur-dx, dy: es.concur-dy - cap-height)
+}
+
+// MEMORANDUM FOR / THRU / FOR RECORD routing block. Every THRU addressee line
+// carries an esign concurrence field (Concur1, Concur2, ...).
 #let _route-block(memo-for, memo-thru) = {
   let rt = layout.route
 
@@ -160,13 +207,13 @@
   }
 
   if memo-thru.len() == 1 {
-    _route-line([MEMORANDUM THRU #_recipient-line(memo-thru.at(0))], rt.paragraph-gap)
+    _route-line([#_concur-field(1)MEMORANDUM THRU #_recipient-line(memo-thru.at(0))], rt.paragraph-gap)
   } else if memo-thru.len() > 1 {
     _route-line([MEMORANDUM THRU], rt.paragraph-gap)
     for (index, recipient) in memo-thru.enumerate() {
       let last = index == memo-thru.len() - 1
       let gap = if last and memo-for.len() > 0 { rt.paragraph-gap } else { rt.stacked-gap }
-      _route-line([#_recipient-line(recipient)], gap)
+      _route-line([#_concur-field(index + 1)#_recipient-line(recipient)], gap)
     }
   }
 
@@ -213,7 +260,12 @@
     enclosures.enumerate().map(((index, value)) => [#(index + 1). #value])
   }
 
+  // The pen-signature space is the template's own gap above the typed name;
+  // the esign box covers exactly that space, its bottom edge resting on the
+  // top of the typed name's capitals.
+  let sig-space = if authority != none { cl.sig-gap-authority } else { cl.sig-gap-no-authority } -0.25in
   let signature = {
+    esign-field("Signature", layout.esign.signature-width, sig-space, dy: -sig-space)
     upper(author.name)
     linebreak()
     [#author.rank, #author.branch]

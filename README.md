@@ -119,11 +119,40 @@ matter shape; its fields mirror the [Fields](#fields) table above.
 ## Building the examples
 
 ```bash
-make          # builds every examples/*.typ to build/*.pdf
+make          # builds every examples/*.typ to build/*.pdf + build/*.fields.json
 ```
 
 `make` runs `typst compile --root .` so the in-repo examples can resolve the
 package entrypoint (`/lib.typ`) and the seal image from the repository root.
+
+## Electronic-signature field positions
+
+Every memo emits the positions of its signature and concurrence boxes as
+`metadata` elements labeled `<esign-field>`, for downstream tooling (`esign`)
+that adds PDF signature form fields. The template emits one `Signature` field
+covering the pen-signature space above the typed name, and one `ConcurN` field
+per MEMORANDUM THRU addressee line. Extract them as JSON:
+
+```bash
+# typst >= 0.15:
+typst eval 'query(<esign-field>).map(it => it.value)' --in memo.typ --format json
+# typst <= 0.14:
+typst query memo.typ "<esign-field>" --field value
+```
+
+(`make` writes this to `build/<name>.fields.json` for each example.) Each
+entry is `{name, page, x, y, w, h}`: a unique field name, the 1-indexed page,
+and the box's top-left corner, width, and height in pt, measured from the
+page's top-left corner with y increasing downward.
+
+Custom fields can be added in a memo body with the exported `esign-field`
+function — call it inline, immediately before the text it anchors to:
+
+```typst
+#import "/lib.typ": memo, esign-field
+
+... #esign-field("Initials", 0.75in, 0.3in, dx: 3in, dy: -0.1in)Anchored line text
+```
 
 ## Notes
 
