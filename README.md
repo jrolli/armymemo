@@ -125,6 +125,18 @@ make          # builds every examples/*.typ to build/*.pdf + build/*.fields.json
 `make` runs `typst compile --root .` so the in-repo examples can resolve the
 package entrypoint (`/lib.typ`) and the seal image from the repository root.
 
+The memo font defaults to Arial and can be overridden at compile time on
+hosts that don't have it (use a metrically compatible family such as
+Liberation Sans to keep the AR 25-50 layout intact):
+
+```bash
+typst compile --input font="Liberation Sans" memo.typ
+make TYPST_FLAGS='--input font="Liberation Sans"'
+```
+
+`make` applies `TYPST_FLAGS` to the field extraction too, so the emitted
+esign positions always match the compiled PDFs.
+
 ## Electronic-signature field positions
 
 Every memo emits the positions of its signature and concurrence boxes as

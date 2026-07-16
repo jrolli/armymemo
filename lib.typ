@@ -13,7 +13,9 @@
 
 #let layout = (
   page: (left: 72pt, right: 72pt, top: 132pt, bottom: 52pt),
-  font-family: "Arial",
+  // Overridable at compile time, e.g. for hosts without Arial:
+  //   typst compile --input font="Liberation Sans" memo.typ
+  font-family: sys.inputs.at("font", default: "Arial"),
   font-size: 12pt,
   leading: 4pt,
   letterhead: (

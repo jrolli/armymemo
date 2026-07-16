@@ -11,9 +11,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install typst
         run: |
-          curl -fsSL https://github.com/typst/typst/releases/download/v0.13.1/typst-x86_64-unknown-linux-musl.tar.xz \
+          curl -fsSL https://github.com/typst/typst/releases/download/v0.15.0/typst-x86_64-unknown-linux-musl.tar.xz \
             | tar -xJ -C /tmp
           sudo install /tmp/typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst
           typst --version
       - name: Build example memos
-        run: make
+        run: make TYPST_FLAGS='--input font="Liberation Sans"'
