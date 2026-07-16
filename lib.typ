@@ -267,7 +267,7 @@
   // top of the typed name's capitals.
   let sig-space = if authority != none { cl.sig-gap-authority } else { cl.sig-gap-no-authority } -0.25in
   let signature = {
-    esign-field("Signature", layout.esign.signature-width, sig-space, dy: -sig-space)
+    esign-field("Signature", layout.esign.signature-width, sig-space, dy: -sig-space - 0.125in)
     upper(author.name)
     linebreak()
     [#author.rank, #author.branch]
