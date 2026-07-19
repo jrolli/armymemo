@@ -19,9 +19,9 @@
   font-size: 12pt,
   leading: 4pt,
   letterhead: (
-    logo-dx: 33pt,
-    logo-dy: 33pt,
-    logo-height: 72pt,
+    seal-dx: 33pt,
+    seal-dy: 33pt,
+    seal-height: 72pt,
     header-dx: 4pt,
     header-top: 36pt,
     dept-size: 10pt,
@@ -117,13 +117,19 @@
 
 // First-page letterhead and any suspense suspense date, drawn in the page
 // foreground so the body always starts at the configured top margin.
-#let _letterhead(organization, suspense, logo) = {
+// Bundled letterhead seals, keyed by the `seal` argument of `memo`.
+#let _seal-files = (
+  DOD: "DOD_Seal_BW.png",
+  DOW: "DOW_Seal_BW.png",
+)
+
+#let _letterhead(organization, suspense, seal) = {
   let lh = layout.letterhead
   let header-top = lh.header-top
   let detail-top = header-top + lh.dept-size + lh.line-gap
   let detail-step = lh.detail-size + lh.line-gap
 
-  place(top + left, dx: lh.logo-dx, dy: lh.logo-dy, image(logo, height: lh.logo-height))
+  place(top + left, dx: lh.seal-dx, dy: lh.seal-dy, image(_seal-files.at(seal), height: lh.seal-height))
   place(
     top + center,
     dx: lh.header-dx,
@@ -331,9 +337,13 @@
   enclosures: (),
   distribution: (),
   cf: (),
-  logo: "DOD_Seal_BW.png",
+  seal: "DOD",
   doc,
 ) = {
+  assert(
+    seal in _seal-files,
+    message: "seal must be one of " + _seal-files.keys().map(repr).join(", "),
+  )
   set page(
     paper: "us-letter",
     margin: layout.page,
@@ -341,7 +351,7 @@
     footer-descent: 0pt,
     foreground: context {
       if counter(page).get().first() == 1 {
-        _letterhead(organization, suspense, logo)
+        _letterhead(organization, suspense, seal)
       } else {
         _continuation-header(office-symbol, subject)
       }
